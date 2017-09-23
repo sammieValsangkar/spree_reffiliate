@@ -6,6 +6,7 @@ module Spree
     end
     def affiliate
       session[:affiliate] = params[:path]
+      cookies[:affiliate] = { :value => params[:path], :expires => Time.now + Spree::Config[:cookie_life_span].to_i.day }
       affiliate = Spree::Affiliate.find_by(:path => params[:path])
       if affiliate.nil? or affiliate.partial.blank? or !partial_exists affiliate.partial
         redirect_to(root_path)
