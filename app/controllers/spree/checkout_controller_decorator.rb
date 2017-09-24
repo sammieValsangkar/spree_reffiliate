@@ -24,9 +24,11 @@ module Spree
         Rails.logger.info "#{current_order.id }--> #{cookies[:affiliate]} >>>> #{current_order.referred_order.inspect}"*200
       if cookies[:affiliate]
         return if current_order.referred_order.present?
-        affiliate = Spree::Affiliate.find_by(path: cookies[:affiliate])
-        Spree::ReferredOrder.create(user_id: spree_current_user.id, order_id: current_order.id, affiliate_id: affiliate.id)
-        Rails.logger.info "#{current_order.id }--> #{cookies[:affiliate]} "*200
+        if (current_order.product_ids & session[:affiliated_products]).any?
+            affiliate = Spree::Affiliate.find_by(path: cookies[:affiliate])
+            Spree::ReferredOrder.create(user_id: spree_current_user.id, order_id: current_order.id, affiliate_id: affiliate.id)
+            Rails.logger.info "#{current_order.id }--> #{cookies[:affiliate]} "*200
+        end
       else
         if current_order.referred_order
           Spree::ReferredOrder.find_by(order_id: current_order.id).destroy
