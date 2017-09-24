@@ -2,6 +2,7 @@ module Spree
   class Affiliate < Spree::Base
     has_many :referred_records
     has_many :referred_orders
+    belongs_to :user, class_name: Spree.user_class.to_s
 
     validates_presence_of :name, :path
 

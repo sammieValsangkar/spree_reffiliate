@@ -3,7 +3,7 @@ module Spree
     has_one :referral
     has_one :referred_record
     has_many :referred_orders
-    has_one :affiliate, through: :referred_record, foreign_key: :affiliate_id
+    has_one :affiliate
     has_one :affiliate_record, class_name: ReferredRecord
 
     attr_accessor :referral_code, :affiliate_code
