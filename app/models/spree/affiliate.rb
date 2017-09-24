@@ -13,6 +13,10 @@ module Spree
     #   referred_records.includes({:user => :orders}).collect{|u| u.user.orders }.flatten.compact
     # end
 
+    def referred_completed_orders
+      referred_orders.joins(:order).where("spree_orders.state='complete'").to_a
+    end
+
     def referred_count
       referred_records.count
     end
