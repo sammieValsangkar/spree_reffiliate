@@ -14,7 +14,7 @@ module Spree
     # end
 
     def referred_completed_orders
-      referred_orders.joins(:order).where("spree_orders.state='complete'").to_a
+      referred_orders.joins(:order).where("spree_orders.state='complete'").map(&:order)
     end
 
     def referred_count
