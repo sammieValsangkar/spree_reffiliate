@@ -21,18 +21,44 @@ module Spree
     # end
 
     def create_referred_order_if_referred
-        Rails.logger.info "#{current_order.id }--> #{cookies[:affiliate]} >>>> #{current_order.referred_order.inspect}"*200
       if cookies[:affiliate]
-        return if current_order.referred_order.present?
-        if (current_order.product_ids & session[:affiliated_products]).any?
-            affiliate = Spree::Affiliate.find_by(path: cookies[:affiliate])
-            Spree::ReferredOrder.create(user_id: spree_current_user.id, order_id: current_order.id, affiliate_id: affiliate.id)
-            Rails.logger.info "#{current_order.id }--> #{cookies[:affiliate]} "*200
+        if current_order.referred_order.present?
+          save_referred_products
+        elsif (current_order.product_ids & session[:affiliated_products]).any?
+          save_referred_order
+          save_referred_products
         end
       else
         if current_order.referred_order
+          destroy_refered_products
           Spree::ReferredOrder.find_by(order_id: current_order.id).destroy
         end
+      end
+    end
+
+    def save_referred_products
+      referred_product_ids = (current_order.product_ids & session[:affiliated_products])
+      return unless referred_product_ids.any?
+      if current_order.referred_order.referred_products
+        current_order.referred_order.referred_products.where.not(product_id: referred_product_ids).destroy_all
+      end
+      referred_product_ids.each do | prod|
+        ref_product = current_order.referred_order.referred_products.find_or_initialize_by(product_id: prod)
+        ref_product.save
+      end
+    end
+
+    def save_referred_order
+      affiliate = Spree::Affiliate.find_by(path: cookies[:affiliate])
+      referred_order = Spree::ReferredOrder.new(order_id: current_order.id, affiliate_id: affiliate.id)
+      referred_order.user_id = spree_current_user.id if spree_current_user
+      referred_order.save!
+      # Rails.logger.info "#{current_order.id }--> #{cookies[:affiliate]} "*200
+    end
+
+    def destroy_refered_products
+      if current_order.referred_order.refered_products
+        current_order.referred_order.refered_products.destroy_all
       end
     end
 
